@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Result Management System</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <div class="logo-text">
+                    <h1>Student Result Management</h1>
+                    <span>Academic Dashboard</span>
+                </div>
+            </div>
+            <button class="dark-toggle" id="darkModeToggle" title="Toggle Dark Mode">
+                <i class="fas fa-moon"></i>
+                <span>Dark Mode</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="container">
+
+        <!-- Alert Notifications -->
+        <div id="alertContainer"></div>
+
+        <!-- ===== STATISTICS CARDS ===== -->
+        <section class="stats-grid">
+            <div class="stat-card total">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-info">
+                    <span class="stat-number" id="totalStudents">0</span>
+                    <span class="stat-label">Total Students</span>
+                </div>
+                <div class="stat-bg-icon"><i class="fas fa-users"></i></div>
+            </div>
+            <div class="stat-card passed">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info">
+                    <span class="stat-number" id="passedStudents">0</span>
+                    <span class="stat-label">Passed</span>
+                </div>
+                <div class="stat-bg-icon"><i class="fas fa-check-circle"></i></div>
+            </div>
+            <div class="stat-card failed">
+                <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+                <div class="stat-info">
+                    <span class="stat-number" id="failedStudents">0</span>
+                    <span class="stat-label">Failed</span>
+                </div>
+                <div class="stat-bg-icon"><i class="fas fa-times-circle"></i></div>
+            </div>
+            <div class="stat-card topper">
+                <div class="stat-icon"><i class="fas fa-trophy"></i></div>
+                <div class="stat-info">
+                    <span class="stat-number" id="topperStatName">—</span>
+                    <span class="stat-label">Class Topper</span>
+                </div>
+                <div class="stat-bg-icon"><i class="fas fa-trophy"></i></div>
+            </div>
+        </section>
+
+        <!-- ===== FORM + TOPPER CARD ===== -->
+        <div class="content-grid">
+
+            <!-- Add / Edit Form -->
+            <section class="card form-card">
+                <div class="card-header">
+                    <h2 id="formTitle"><i class="fas fa-user-plus"></i> Add New Student</h2>
+                </div>
+                <form id="studentForm" novalidate>
+                    <input type="hidden" id="editIndex" value="-1">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="studentName"><i class="fas fa-user"></i> Student Name</label>
+                            <input type="text" id="studentName" placeholder="Enter full name" autocomplete="off">
+                            <span class="error-msg" id="nameError"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="rollNumber"><i class="fas fa-id-card"></i> Roll Number</label>
+                            <input type="text" id="rollNumber" placeholder="e.g. CS-101" autocomplete="off">
+                            <span class="error-msg" id="rollError"></span>
+                        </div>
+                    </div>
+
+                    <div class="marks-section">
+                        <p class="marks-heading"><i class="fas fa-star-half-alt"></i> Subject Marks <small>(out of 100 each)</small></p>
+                        <div class="marks-grid">
+                            <div class="form-group">
+                                <label for="mathMarks"><i class="fas fa-calculator"></i> Mathematics</label>
+                                <input type="number" id="mathMarks" placeholder="0 – 100" min="0" max="100">
+                                <span class="error-msg" id="mathError"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="physicsMarks"><i class="fas fa-atom"></i> Physics</label>
+                                <input type="number" id="physicsMarks" placeholder="0 – 100" min="0" max="100">
+                                <span class="error-msg" id="physicsError"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="programmingMarks"><i class="fas fa-code"></i> Programming</label>
+                                <input type="number" id="programmingMarks" placeholder="0 – 100" min="0" max="100">
+                                <span class="error-msg" id="programmingError"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="fas fa-plus"></i> Add Student
+                        </button>
+                        <button type="button" class="btn btn-warning" id="cancelBtn" style="display:none;">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="button" class="btn btn-outline" id="clearBtn">
+                            <i class="fas fa-eraser"></i> Clear
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Topper Card -->
+            <section class="card topper-card" id="topperCard" style="display:none;">
+                <div class="card-header">
+                    <h2><i class="fas fa-trophy"></i> Class Topper</h2>
+                    <span class="champion-badge"><i class="fas fa-crown"></i> Champion</span>
+                </div>
+                <div class="topper-body">
+                    <div class="topper-avatar-wrap">
+                        <div class="topper-avatar" id="topperAvatar">A</div>
+                        <div class="topper-glow"></div>
+                    </div>
+                    <div class="topper-details">
+                        <h3 id="topperDetailName">—</h3>
+                        <p class="topper-roll" id="topperRoll">Roll No: —</p>
+                        <div class="topper-badges">
+                            <span class="badge" id="topperGrade">Grade —</span>
+                            <span class="badge badge-pct" id="topperPercentage">—%</span>
+                            <span class="badge badge-status" id="topperStatus">—</span>
+                        </div>
+                        <div class="topper-marks" id="topperSubjects"></div>
+                    </div>
+                </div>
+            </section>
+
+        </div><!-- /content-grid -->
+
+        <!-- ===== STUDENTS TABLE SECTION ===== -->
+        <section class="card table-card">
+            <div class="table-header">
+                <h2><i class="fas fa-table"></i> Student Records</h2>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search by Roll Number…">
+                    <button class="clear-search-btn" id="clearSearch" title="Clear"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+
+            <!-- Filter & Sort Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all"><i class="fas fa-list-ul"></i> All</button>
+                    <button class="filter-btn" data-filter="pass"><i class="fas fa-check"></i> Passed</button>
+                    <button class="filter-btn" data-filter="fail"><i class="fas fa-times"></i> Failed</button>
+                </div>
+                <div class="sort-export-group">
+                    <select id="sortSelect" title="Sort students">
+                        <option value="default">— Sort By —</option>
+                        <option value="percentage-desc">Percentage: High → Low</option>
+                        <option value="percentage-asc">Percentage: Low → High</option>
+                        <option value="name-asc">Name: A → Z</option>
+                        <option value="name-desc">Name: Z → A</option>
+                        <option value="roll-asc">Roll No: Ascending</option>
+                    </select>
+                    <button class="btn btn-export" id="exportCSV" title="Export to CSV">
+                        <i class="fas fa-file-csv"></i> CSV
+                    </button>
+                    <button class="btn btn-export btn-export-pdf" id="exportPDF" title="Export to PDF">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-wrapper">
+                <table id="studentsTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Student Name</th>
+                            <th>Roll No</th>
+                            <th>Math</th>
+                            <th>Physics</th>
+                            <th>Prog.</th>
+                            <th>Total / 300</th>
+                            <th>Percentage</th>
+                            <th>Grade</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState">
+                    <i class="fas fa-user-graduate"></i>
+                    <p>No Records Found</p>
+                    <span>Add a student using the form above to get started.</span>
+                </div>
+            </div>
+
+            <div class="table-footer">
+                <span id="recordCount">Showing 0 records</span>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <p><i class="fas fa-graduation-cap"></i> Student Result Management System &copy; 2026 — Built with Vanilla JavaScript</p>
+    </footer>
+
+    <!-- ===== DELETE CONFIRMATION MODAL ===== -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-box">
+            <div class="modal-icon">
+                <i class="fas fa-trash-alt"></i>
+            </div>
+            <h2 class="modal-title">Delete Record?</h2>
+            <p class="modal-sub">Are you sure you want to delete</p>
+            <div class="modal-student-info">
+                <span class="modal-student-name" id="modalStudentName">—</span>
+                <span class="modal-student-roll" id="modalStudentRoll">Roll: —</span>
+            </div>
+            <p class="modal-warning"><i class="fas fa-exclamation-triangle"></i> This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn btn-modal-no" id="modalNoBtn">
+                    <i class="fas fa-times"></i> No, Keep It
+                </button>
+                <button class="btn btn-modal-yes" id="modalYesBtn">
+                    <i class="fas fa-trash-alt"></i> Yes, Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
